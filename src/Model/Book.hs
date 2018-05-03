@@ -4,6 +4,7 @@ module Model.Book where
 
 import Model.DateTimeObj (DateTimeObj)
 import Model.GenericObj (GenericObj)
+import qualified Model.GenericObj as GenericObj
 import qualified Model.DateTimeObj as DateTimeObj
 import Model.Url (Url)
 import Model.AuthorRef (AuthorRef)
@@ -23,8 +24,6 @@ data Book = Book
     , key :: String 
     , authors :: [AuthorRef]
     , subjects :: Maybe [String]
-    , subjectPeople :: Maybe [String]
-    , subjectPlaces :: Maybe [String]
     , links :: Maybe [Url]
     } deriving (Show)
 
@@ -32,7 +31,7 @@ type BookQueryData =
     ( String
     , Maybe String
     , Maybe Day
-    , Maybe GenericObj
+    , Maybe Text
     , String 
     )
 
@@ -41,7 +40,7 @@ bookTuple ( Book { title, subtitle, created, description, key } )
     = ( title
       , subtitle
       , created >>= DateTimeObj.value >>= parseDate
-      , description
+      , description >>= GenericObj.value
       , key 
       )
 
