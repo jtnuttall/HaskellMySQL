@@ -1,0 +1,314 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"tryP",
+				"tryParseFull"
+			],
+			[
+				"My",
+				"MySQLNull"
+			],
+			[
+				"unsaf",
+				"unsafeCoerce"
+			],
+			[
+				"MySql",
+				"MySQLValue"
+			],
+			[
+				"try",
+				"tryParseFull"
+			],
+			[
+				"update",
+				"updateModelPage"
+			],
+			[
+				"navba",
+				"navbarState"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "package.yaml",
+			"settings":
+			{
+				"buffer_size": 1185,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Haskell/Haskell.sublime-build",
+					""
+				],
+				[
+					"Packages/User/haskell-ghc.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/User/haskell-ghc.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 215.0,
+		"last_filter": "instal",
+		"selected_items":
+		[
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"instaal",
+				"Package Control: Install Package"
+			],
+			[
+				"package",
+				"Install Package Control"
+			]
+		],
+		"width": 609.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/E/Projects/HaskellMySQL"
+	],
+	"file_history":
+	[
+		"/C/Users/Jeremy/Downloads/Model.hs",
+		"/C/Users/Jeremy/AppData/Roaming/cabal/logs/ghc-8.2.2/old-time-1.1.0.3-LmKk8FUXtYwDVw5bR99HBe.log",
+		"/C/Program Files (x86)/Steam/steamapps/common/Star Wars Empire at War/GameData/Data/XML/SPACEUNITSSUPERS.XML",
+		"/C/Program Files (x86)/Steam/steamapps/common/Star Wars Empire at War/corruption/Data/XML/GAMECONSTANTS.XML",
+		"/C/Program Files (x86)/Steam/steamapps/common/Sins of a Solar Empire Rebellion/GameInfo/Gameplay.constants",
+		"/C/Users/Jeremy/Saved Games/Petroglyph/Empire At War - Forces of Corruption/Save/my save.PetroglyphFoCSave",
+		"/C/sr/config.yaml",
+		"/E/Projects/Final Project - 303/Final Project/src/Views/UserPage.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Main.css",
+		"/E/Projects/Final Project - 303/Final Project/src/Main.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/index.js",
+		"/E/Projects/Final Project - 303/Final Project/src/Data/Permissions.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Views/SearchArea.elm",
+		"/E/Projects/Final Project - 303/Final Project/public/index.html",
+		"/E/Projects/Final Project - 303/Final Project/src/Data/User.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Data/Msg.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Data/Query.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/UI/Navbar.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Models/Permissions.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/App/Update.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Models/Package.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Models/Page.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/App/Ports.elm",
+		"/E/Projects/Final Project - 303/Final Project/src/Models/Route.elm",
+		"/E/Projects/Final Project - 303/Final Project/public/manifest.json",
+		"/E/Projects/Final Project - 303/Final Project/Trash/main.css",
+		"/C/Users/Jeremy/Documents/A fish.txt",
+		"/C/Users/Jeremy/Documents/dude weed lmao",
+		"/C/Users/Jeremy/Documents/lindsey",
+		"/C/Users/Jeremy/Documents/lindsey pt 2",
+		"/C/Users/Jeremy/Documents/final_project_description.html",
+		"/C/Users/Jeremy/Downloads/core.db",
+		"/C/Users/Jeremy/AppData/Roaming/Sublime Text 3/Packages/User/haskell-ghc.sublime-build",
+		"/C/Program Files (x86)/Vim/_vimrc",
+		"/C/Users/Jeremy/Documents/FullCountingSort.hs",
+		"/C/Users/Jeremy/Documents/CountingSort.hs",
+		"/C/Users/Jeremy/Documents/CountingSort.prof",
+		"/C/Users/Jeremy/Documents/countingSortInput.txt",
+		"/C/Users/Jeremy/Documents/My Games/Skyrim Special Edition/SkyrimPrefs.ini"
+	],
+	"find":
+	{
+		"height": 55.0
+	},
+	"find_in_files":
+	{
+		"height": 140.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "package.yaml",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 1185,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/YAML/YAML.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 38.0
+	},
+	"input":
+	{
+		"height": 46.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.elm_format":
+	{
+		"height": 136.0
+	},
+	"output.elm_type":
+	{
+		"height": 0.0
+	},
+	"output.exec":
+	{
+		"height": 542.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/User/haskell-ghc.sublime-build",
+	"project": "HaskellMySQL.sublime-project",
+	"replace":
+	{
+		"height": 71.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 280.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
