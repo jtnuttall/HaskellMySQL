@@ -16,7 +16,8 @@ import Data.Text (Text)
 import Database.MySQL.Simple.Types
 
 data Book = Book
-    { title :: String
+    { bookid :: Maybe Int
+    , title :: String
     , subtitle :: Maybe String
     , created :: Maybe DateTimeObj
     , lastModified :: Maybe DateTimeObj
@@ -26,6 +27,12 @@ data Book = Book
     , subjects :: Maybe [String]
     , links :: Maybe [Url]
     } deriving (Show)
+
+instance Eq Book where
+	(==) b1 b2 = (bookid b1) == (bookid b2)
+
+instance Ord Book where
+	compare b1 b2 = compare (bookid b1) (bookid b2)
 
 type BookQueryData =
     ( String
