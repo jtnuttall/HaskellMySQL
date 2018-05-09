@@ -2,10 +2,8 @@
 {-# LANGUAGE NamedFieldPuns  #-}
 module Model.Book where
 
-import Model.DateTimeObj (DateTimeObj)
-import Model.GenericObj (GenericObj)
-import qualified Model.GenericObj as GenericObj
-import qualified Model.DateTimeObj as DateTimeObj
+import Model.Object (Object(Object))
+import qualified Model.Object as Object
 import Model.Url (Url)
 import Model.AuthorRef (AuthorRef)
 import Util.Time (parseDate)
@@ -19,9 +17,9 @@ data Book = Book
     { bookid :: Maybe Int
     , title :: String
     , subtitle :: Maybe String
-    , created :: Maybe DateTimeObj
-    , lastModified :: Maybe DateTimeObj
-    , description :: Maybe GenericObj
+    , created :: Maybe (Object String)
+    , lastModified :: Maybe (Object String)
+    , description :: Maybe (Object Text)
     , key :: String 
     , authors :: [AuthorRef]
     , subjects :: Maybe [String]
@@ -29,10 +27,10 @@ data Book = Book
     } deriving (Show)
 
 instance Eq Book where
-	(==) b1 b2 = (bookid b1) == (bookid b2)
+    (==) b1 b2 = (bookid b1) == (bookid b2)
 
 instance Ord Book where
-	compare b1 b2 = compare (bookid b1) (bookid b2)
+    compare b1 b2 = compare (bookid b1) (bookid b2)
 
 type BookQueryData =
     ( String
@@ -46,8 +44,8 @@ bookTuple :: Book -> BookQueryData
 bookTuple ( Book { title, subtitle, created, description, key } ) 
     = ( title
       , subtitle
-      , created >>= DateTimeObj.value >>= parseDate
-      , description >>= GenericObj.value
+      , created >>= Object.value >>= parseDate
+      , description >>= Object.value
       , key 
       )
 

@@ -16,7 +16,7 @@ tryParseDots :: String -> Maybe Day
 tryParseDots = parseMaybe "%d.%m.%Y"
 
 tryParseFull :: String -> Maybe Day
-tryParseFull = parseMaybe "%Y-%m-%dT%H:%M:%ES"
+tryParseFull = parseMaybe "%Y-%m-%d" . takeWhile (/= 'T')
 
 parseDate :: String -> Maybe Day
 parseDate str = 

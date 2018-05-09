@@ -41,6 +41,8 @@ dependencies:
 - vector >= 0.12 && < 0.14
 - random
 - vector-algorithms
+- io-streams
+- bytestring-strict-builder
 
 library:
   source-dirs: src
@@ -50,6 +52,7 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
+    - -Wall
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N

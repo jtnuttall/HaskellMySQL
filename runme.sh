@@ -1,1 +1,1 @@
-stack exec HaskellMySQL-exe -- $1 $2
+stack exec HaskellMySQL-exe -- "$@"

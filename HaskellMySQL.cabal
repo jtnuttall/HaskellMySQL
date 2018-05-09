@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 93d373382a5b1473804f765d5df2376fbf4edc07f08735f8dbc8ed56d7d15d79
+-- hash: b9c018d030ff407f82443f13a6ed86b266682dba883f39877a3407d37d2bbbd7
 
 name:           HaskellMySQL
 version:        0.1.0.0
@@ -33,8 +33,10 @@ library
     , async
     , base >=4.7 && <5
     , bytestring >=0.10 && <1.0
+    , bytestring-strict-builder
     , concurrent-extra
     , containers >=0.5 && <=0.6
+    , io-streams
     , lens ==4.16.1
     , mysql >=0.1.1.1
     , mysql-simple ==0.4.5
@@ -53,13 +55,11 @@ library
       Model.Author
       Model.AuthorRef
       Model.Book
-      Model.DateTimeObj
-      Model.GenericObj
+      Model.Object
       Model.Url
       MySQLWorker
       Test.DataModel
       Test.MySQLModel
-      Util.MySQLValue
       Util.Sanitizer
       Util.String
       Util.Time
@@ -71,7 +71,7 @@ executable HaskellMySQL-exe
   main-is: Main.hs
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -O2
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N -O2
   build-depends:
       HaskellMySQL
     , aeson >=1.2 && <1.4
@@ -79,8 +79,10 @@ executable HaskellMySQL-exe
     , async
     , base >=4.7 && <5
     , bytestring >=0.10 && <1.0
+    , bytestring-strict-builder
     , concurrent-extra
     , containers >=0.5 && <=0.6
+    , io-streams
     , lens ==4.16.1
     , mysql >=0.1.1.1
     , mysql-simple ==0.4.5
@@ -112,8 +114,10 @@ test-suite HaskellMySQL-test
     , async
     , base >=4.7 && <5
     , bytestring >=0.10 && <1.0
+    , bytestring-strict-builder
     , concurrent-extra
     , containers >=0.5 && <=0.6
+    , io-streams
     , lens ==4.16.1
     , mysql >=0.1.1.1
     , mysql-simple ==0.4.5

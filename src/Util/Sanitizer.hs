@@ -4,78 +4,76 @@ module Util.Sanitizer (sanitize) where
 
 import Control.Arrow
 import Data.Monoid
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as BS
-import qualified Data.ByteString.Builder as B
-import Data.ByteString.Lazy.Search
+import Data.ByteString.Char8 (ByteString)
+import qualified Data.ByteString.Char8 as BS
+import qualified ByteString.StrictBuilder as B
+import Data.ByteString.Search
 import Data.Coerce
 import Text.Regex.Base.RegexLike
-import Text.Regex.TDFA.ByteString.Lazy
-import Debug.Trace
+import Text.Regex.TDFA.ByteString
 import Data.Array
 
 newFieldRegex :: Regex
 newFieldRegex = 
-	let result = compile defaultCompOpt defaultExecOpt "\" +\".+\":"
-	in case result of
-		Right regex -> regex
-		Left err    -> error err
+    let result = compile defaultCompOpt defaultExecOpt "\" +\".+\":"
+    in case result of
+        Right regex -> regex
+        Left err    -> error err
 
-cleanDescriptions :: [ByteString] -> [ByteString]
-cleanDescriptions [] = []
-cleanDescriptions (line:s)
-	| BS.null rest || BS.null spacefree = line : sanitize s
-	| otherwise = 
-		case (BS.uncons spacefree) of
-			(Just ('"',_)) -> trace ("build") B.toLazyByteString
-				( uptoB
-			   <> B.charUtf8   '{'
-			   <> B.charUtf8   '"'
-			   <> B.stringUtf8 "value"
-			   <> B.charUtf8   '"'
-			   <> B.charUtf8   ':'
-			   <> desc
-			   <> B.charUtf8   '}'
-			   <> rem
-			    ) : sanitize s
-			_          -> line : sanitize s
+utf8String :: String -> B.Builder
+utf8String = mconcat . map B.utf8Char
 
-	where
-		(upto, rest)  = breakAfter "\"description\":" line
+cleanDescription :: ByteString -> ByteString
+cleanDescription line
+    | BS.null rest || BS.null spacefree = line
+    | otherwise = 
+        case BS.uncons spacefree of
+            (Just ('"',_)) -> B.builderBytes
+                ( uptoB
+               <> B.utf8Char '{'
+               <> B.utf8Char '"'
+               <> utf8String "value"
+               <> B.utf8Char '"'
+               <> B.utf8Char ':'
+               <> desc
+               <> B.utf8Char '}'
+               <> rem
+                ) 
 
-		(desc', rem') = 
-			case execute newFieldRegex rest of
-				Left err -> error err
-				Right marray ->
-					case marray of
-						Nothing      -> ( rest , "" )
-						(Just match) ->
-							let (i, _) = (first fromIntegral) $ match ! 0
-							in ( BS.take i rest, BS.drop i rest )
+            _             -> line
 
-		-- (desc', rem') = BS.splitAt (fromJust (BS.length rest) $ BS.elemIndex '"' rest) rest
-		uptoB         = B.lazyByteString upto
-		desc          = B.lazyByteString desc'
-		rem           = B.lazyByteString rem'
-		spacefree     = BS.filter (/= ' ') rest
+    where
+        (upto, rest)  = breakAfter "\"description\":" line
+
+        (desc', rem') = 
+            case execute newFieldRegex rest of
+                Left err     -> error err
+                Right marray ->
+                    case marray of
+                        Nothing      -> ( rest , "" )
+                        (Just match) ->
+                            let (i, _) = first fromIntegral $ match ! 0
+                            in ( BS.take i rest, BS.drop i rest )
+
+        uptoB         = B.bytes upto
+        desc          = B.bytes desc'
+        rem           = B.bytes rem'
+        spacefree     = BS.filter (/= ' ') rest
 
 
-scrubDuplicates :: [ByteString] -> [B.Builder]
-scrubDuplicates [] = []
-scrubDuplicates (line:s) = scrub line : scrubDuplicates s
-	where
-		scrub (BS.uncons -> Nothing) 
-			= mempty
-		scrub (BS.uncons -> Just (c, (BS.uncons -> Nothing)))
-			= B.charUtf8 c
-		scrub (BS.uncons -> Just (c1, inner@(BS.uncons -> Just (c2, rest)))) 
-			| c1 == '\\' && c2 == '"' 
-				= scrub rest
-			| otherwise 
-				= B.charUtf8 c1 <> scrub inner
+scrubDuplicates :: ByteString -> B.Builder
+scrubDuplicates (BS.uncons -> Nothing) 
+    = mempty
+scrubDuplicates (BS.uncons -> Just (c, BS.uncons -> Nothing))
+    = B.utf8Char c
+scrubDuplicates (BS.uncons -> Just (c1, inner@(BS.uncons -> Just (c2, rest)))) 
+    | c1 == '\\' && c2 == '"' 
+        = scrubDuplicates rest
+    | otherwise 
+        = B.utf8Char c1 <> scrubDuplicates inner
 
-sanitize :: [ByteString] -> [ByteString]
-sanitize = cleanDescriptions . map B.toLazyByteString . scrubDuplicates
+sanitize :: ByteString -> ByteString
+sanitize = cleanDescription . B.builderBytes . scrubDuplicates
 
 fromJust :: Integral a => a -> Maybe a -> a
 fromJust _ (Just x) = x

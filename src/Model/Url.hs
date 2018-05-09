@@ -20,4 +20,4 @@ $( deriveJSON (defaultOptions { fieldLabelModifier = toSnake }) ''Url )
 
 
 urlTuple :: Url -> UrlQueryData
-urlTuple (Url { url, title }) = (url, title)
+urlTuple Url { url, title } = (url, title)
