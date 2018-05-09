@@ -25,13 +25,13 @@ data Args = Args
 
 
 infixl 4 ◈, ⊕, ⋇
-(◈) :: Functor f => (a → b) → f a → f b
+(◈) ∷ Functor f ⇒ (a → b) → f a → f b
 (◈) = (<$>)
 
-(⊕) :: Semigroup s => s → s → s
+(⊕) ∷ Semigroup s ⇒ s → s → s
 (⊕) = (<>)
 
-(⋇) :: Applicative f => f (a → b) → f a → f b
+(⋇) ∷ Applicative f ⇒ f (a → b) → f a → f b
 (⋇) = (<*>)
 
 argsParser ∷ Parser Args
@@ -100,15 +100,15 @@ main = do
 
             -- Perform our insertions in a separate thread
             _ ← forkIO $ 
-                doMySQLWork
-                    authorsStream
-                    (numAuthors args)
-                    (startAuthor args)
-                    booksStream
-                    (numBooks args)
-                    (startBook args)
-                    (verbose args)
-                    consoleOutbox
+                    doMySQLWork
+                        authorsStream
+                        (numAuthors args)
+                        (startAuthor args)
+                        booksStream
+                        (numBooks args)
+                        (startBook args)
+                        (verbose args)
+                        consoleOutbox
 
             {- Create a pipe to asynchronously print information to stdout.
                Because output is atomically sent into the mailbox queue from 
