@@ -10,9 +10,9 @@ import           Text.Pretty.Simple         (pPrint)
 
 run ∷ [ByteString] → IO()
 run jsonObjs = do
-    let authors = take 2 . catMaybes $ map decode jsonObjs :: [Author]
+    let authors = take 2 . catMaybes $ map decode jsonObjs ∷ [Author]
 
-    forM_ authors $ \author -> do
+    forM_ authors $ \author → do
         pPrint author
 
         putStrLn "\n"

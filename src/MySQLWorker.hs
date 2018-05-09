@@ -64,13 +64,13 @@ insertAuthor conn verbose outPipe author@Author { Author.name, Author.links } vi
             ) VALUES
             ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
         -}
-        affected <-
+        affected ←
             catch
                 (MySQL.execute conn
                     "INSERT INTO `authors` (`bio`, `name`, `personalName`, `deathDate`, `created`, `lastModified`, `latestRevision`, `key`, `birthDate`, `revision`, `permissions`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     (authorTuple author)
                 )
-                (\e -> print (e :: SomeException)  >> return 0)
+                (\e → print (e :: SomeException)  >> return 0)
 
 
         if affected <= 0 then do
@@ -82,24 +82,24 @@ insertAuthor conn verbose outPipe author@Author { Author.name, Author.links } vi
                 Pipes.send outPipe "Insertion successful."
                 Pipes.send outPipe "Adding urls..."
 
-            authorid <- MySQL.insertID conn
+            authorid ← MySQL.insertID conn
             case links of
-                Just links -> do
-                    forM_ links $ \Url { Url.url, Url.title } -> do
-                        affected <- MySQL.execute conn
+                Just links → do
+                    forM_ links $ \Url { Url.url, Url.title } → do
+                        affected ← MySQL.execute conn
                             "INSERT IGNORE INTO urls (url, title) VALUES (?, ?)"
                             (url, title)
 
                         if affected > 0 then do
-                            urlid <- MySQL.insertID conn
+                            urlid ← MySQL.insertID conn
 
-                            affected <-
+                            affected ←
                                 catch
                                     (MySQL.execute conn
                                         "INSERT IGNORE INTO links (authorid, urlid) VALUES (?, ?)"
                                         (authorid, urlid)
                                     )
-                                    (\e -> (\_ -> return 0) (e :: SomeException))
+                                    (\e → (const $ return 0) (e :: SomeException))
 
 
                             when verbose $
@@ -112,7 +112,7 @@ insertAuthor conn verbose outPipe author@Author { Author.name, Author.links } vi
 
                     return (Set.insert name visitedNames)
 
-                Nothing -> return (Set.insert name visitedNames)
+                Nothing → return (Set.insert name visitedNames)
 
         return (Set.insert name visitedNames)
 
@@ -123,12 +123,12 @@ insertBook ∷ Connection → Bool → Out → Book → Bool → IO Bool
 insertBook conn verbose outPipe book@Book { Book.title, Book.authors, Book.subjects } _ = do
     void . atomically . Pipes.send outPipe $ "Working on book " ++ title
 
-    affected <- catch
+    affected ← catch
         (MySQL.execute conn
             "INSERT INTO `books` (`title`, `subtitle`, `created`, `description`, `key`) VALUES (?, ?, ?, ?, ?)"
             (bookTuple book)
         )
-        (\e -> print (e :: SomeException) >> return 0)
+        (\e → print (e :: SomeException) >> return 0)
 
     if affected <= 0 then do
         when verbose . void . atomically $
@@ -140,16 +140,16 @@ insertBook conn verbose outPipe book@Book { Book.title, Book.authors, Book.subje
             Pipes.send outPipe "Insertion successful."
             Pipes.send outPipe "Adding subjects..."
 
-        bookid <- MySQL.insertID conn
+        bookid ← MySQL.insertID conn
         when (isJust subjects) $ do
             let subs = fromJust subjects
-            affected <- fmap sum . forM subs $ \subject -> do
-                affectedFirst <- MySQL.execute conn
+            affected ← fmap sum . forM subs $ \subject → do
+                affectedFirst ← MySQL.execute conn
                     "INSERT IGNORE INTO `subjects` (`name`) VALUES (?)"
                     (Only subject)
 
-                subjectid <- MySQL.insertID conn
-                affectedSecond <- MySQL.execute conn
+                subjectid ← MySQL.insertID conn
+                affectedSecond ← MySQL.execute conn
                     "INSERT IGNORE INTO `books_subjects` (`bookid`, `subjectid`) VALUES (?, ?)"
                     (bookid, subjectid)
 
@@ -167,14 +167,14 @@ insertBook conn verbose outPipe book@Book { Book.title, Book.authors, Book.subje
 
 insertBookAuthor ∷ Param a ⇒ Connection → Bool → Out → a → [AuthorRef] → IO()
 insertBookAuthor conn verbose outPipe bookid authors = do
-    affected <- fmap sum . forM authors $ \authorRef -> do
-        candidateIds <- MySQL.query conn
+    affected ← fmap sum . forM authors $ \authorRef → do
+        candidateIds ← MySQL.query conn
             "SELECT (`authorid`) FROM `authors` WHERE `key` LIKE ?"
             (Only (AuthorRef.key <$> AuthorRef.author authorRef))
 
-        let toInt = (\(Only v) -> v) :: Only Int → Int
+        let toInt = (\(Only v) → v) :: Only Int → Int
 
-        fmap sum . forM (map toInt candidateIds) $ \authorid ->
+        fmap sum . forM (map toInt candidateIds) $ \authorid →
             MySQL.execute conn
                 "INSERT IGNORE books_authors (`authorid`, `bookid`) VALUES (?, ?)"
                 (authorid, bookid)
@@ -201,17 +201,19 @@ doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStar
     let takeAuthors = if numAuthors < 0 then return . id else Streams.take numAuthors
         takeBooks   = if numBooks < 0 then return . id else Streams.take numBooks
 
-    conn <- MySQL.connect connectInfo
+    conn ← MySQL.connect connectInfo
 
 
-    putStrLn "Operating on authors..."
-    authorsStream <-
+    void . atomically $ Pipes.send outPipe "Operating on authors..."
+    authorsStream ←
         Streams.drop authorStart authorsStream_ >>=
             takeAuthors >>=
                 Streams.map decodeStrict >>=
                     Streams.filter isJust >>=
                         Streams.map fromJust
 
+
+    {- Use a fold to eliminate the need for an IORef to the set. -}
     Streams.foldM_
         (flip $ insertAuthor conn verbose outPipe)
         (return Set.empty)
@@ -219,14 +221,17 @@ doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStar
         authorsStream
 
 
-    putStrLn "Operating on books..."
-    booksStream <-
+    void . atomically $ Pipes.send outPipe "Operating on books..."
+    booksStream ←
         Streams.drop bookStart booksStream_ >>=
             takeBooks >>=
                 Streams.map (decodeStrict . sanitize) >>=
                     Streams.filter isJust >>=
                         Streams.map fromJust
 
+    {- Evaluation of I/O is not happening properly without using
+       a similar fold.
+     -}
     Streams.foldM_
         (flip $ insertBook conn verbose outPipe)
         (return True)
