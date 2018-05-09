@@ -10,7 +10,7 @@ import Control.Monad
 import Control.Exception
 import Control.Arrow
 import Data.Maybe (fromJust, isJust, catMaybes)
-import Data.Aeson (decodeStrict, eitherDecodeStrict)
+import Data.Aeson (decodeStrict)
 import Data.IORef
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.String
@@ -196,40 +196,35 @@ insertBookAuthor conn verbose bookid authors = do
 type Stream = Streams.InputStream B.ByteString
 
 doMySQLWork :: Stream -> Int64 -> Int64 -> Stream -> Int64 -> Int64 -> Bool -> IO()
-doMySQLWork authorStream_ numAuthors authorStart booksStream_ numBooks bookStart verbose = do
-    bookM <- Streams.peek booksStream_
-    pPrint (eitherDecodeStrict $ fromJust bookM :: Either String Book)
+doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStart verbose = do
+    conn <- MySQL.connect connectInfo
 
-    -- conn <- MySQL.connect connectInfo
+    when verbose $ putStrLn "Operating on authors..."
 
-    -- when verbose $ putStrLn "Operating on authors..."
+    authorsStream <- 
+        Streams.drop authorStart authorsStream_ >>=
+            Streams.take numAuthors >>=
+                Streams.map decodeStrict >>=
+                    Streams.filter isJust >>=
+                        Streams.map fromJust
 
-    -- authorsStream <- 
-    --     return authorStream_ >>=
-    --         Streams.drop authorStart >>=
-    --             Streams.take numAuthors >>=
-    --                 Streams.map decodeStrict >>=
-    --                     Streams.filter isJust >>=
-    --                         Streams.map fromJust
+    Streams.foldM_ 
+        (flip $ insertAuthor conn verbose) 
+        (return Set.empty)
+        return
+        authorsStream
 
-    -- Streams.foldM_ 
-    --     (flip $ insertAuthor conn verbose) 
-    --     (return Set.empty)
-    --     (return)
-    --     (authorsStream)
+    when verbose $ putStrLn "Operating on books..."
 
-    -- when verbose $ putStrLn "Operating on books..."
+    booksStream <-
+        Streams.drop bookStart booksStream_ >>=
+            Streams.take numBooks >>=
+                Streams.map (decodeStrict . sanitize) >>=
+                    Streams.filter isJust >>=
+                        Streams.map fromJust
 
-    -- booksStream <-
-    --     return booksStream_ >>=
-    --         Streams.drop bookStart >>=
-    --             Streams.take numBooks >>=
-    --                 Streams.map (decodeStrict . sanitize) >>=
-    --                     Streams.filter isJust >>=
-    --                         Streams.map fromJust
+    Streams.mapM_ 
+        (insertBook conn verbose) 
+        booksStream
 
-    -- Streams.mapM_ 
-    --     (insertBook conn verbose) 
-    --     (booksStream)
-
-    -- MySQL.close conn
+    MySQL.close conn

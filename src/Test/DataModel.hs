@@ -3,9 +3,8 @@ module Test.DataModel (run) where
 import Model.Book
 import Model.Author
 import Control.Monad (forM_)
-import Data.Aeson (eitherDecode)
+import Data.Aeson (decode, eitherDecode)
 import Data.Either (rights, isRight, isLeft)
-import Data.Aeson (decode)
 import Text.Printf (printf)
 import Text.Pretty.Simple
 import qualified Data.ByteString.Lazy.Char8 as C
@@ -30,7 +29,7 @@ run jsonObjs = do
 
     putStrLn "\n"
 
-    let parsedCorrectly = rights . filter (isRight) $ decoded
+    let parsedCorrectly = rights . filter isRight $ decoded
         total    = length decoded
         total'   = fromIntegral total :: Double
         partial  = length parsedCorrectly

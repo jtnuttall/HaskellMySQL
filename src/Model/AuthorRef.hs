@@ -15,7 +15,7 @@ newtype AuthorRef = AuthorRef
     deriving (Show)
 
 refKey :: AuthorRef -> Maybe ByteString
-refKey ref = pack <$> key <$> author ref
+refKey ref = pack . key <$> author ref
 
 $( deriveJSON (defaultOptions { fieldLabelModifier = toSnake }) ''KeyType )
 $( deriveJSON (defaultOptions { fieldLabelModifier = toSnake }) ''AuthorRef )

@@ -27,7 +27,7 @@ data Book = Book
     } deriving (Show)
 
 instance Eq Book where
-    (==) b1 b2 = (bookid b1) == (bookid b2)
+    (==) b1 b2 = bookid b1 == bookid b2
 
 instance Ord Book where
     compare b1 b2 = compare (bookid b1) (bookid b2)
@@ -41,7 +41,13 @@ type BookQueryData =
     )
 
 bookTuple :: Book -> BookQueryData
-bookTuple ( Book { title, subtitle, created, description, key } ) 
+bookTuple Book 
+    { title
+    , subtitle
+    , created
+    , description
+    , key 
+    } 
     = ( title
       , subtitle
       , created >>= Object.value >>= parseDate

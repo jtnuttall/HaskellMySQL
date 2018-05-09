@@ -72,10 +72,21 @@ type AuthorQueryData =
     )
 
 urlTuples :: Author -> Maybe [UrlQueryData]
-urlTuples (Author { links }) = map urlTuple <$> links 
+urlTuples Author { links } = map urlTuple <$> links 
 
 authorTuple :: Author -> AuthorQueryData
-authorTuple (Author { bio, name, personalName, deathDate, created, lastModified, latestRevision, key, birthDate, revision } ) 
+authorTuple Author 
+    { bio
+    , name
+    , personalName
+    , deathDate
+    , created
+    , lastModified
+    , latestRevision
+    , key
+    , birthDate
+    , revision 
+    } 
     = ( bio
       , name
       , personalName
