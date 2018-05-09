@@ -43,6 +43,7 @@ dependencies:
 - vector-algorithms
 - io-streams
 - bytestring-strict-builder
+- deepseq
 
 library:
   source-dirs: src

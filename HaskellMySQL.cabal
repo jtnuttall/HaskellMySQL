@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b9c018d030ff407f82443f13a6ed86b266682dba883f39877a3407d37d2bbbd7
+-- hash: ec83a5f66b3f67e4d849eb99187c0fca93e243e6d6590adc0dc16f7870e60a18
 
 name:           HaskellMySQL
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
     , bytestring-strict-builder
     , concurrent-extra
     , containers >=0.5 && <=0.6
+    , deepseq
     , io-streams
     , lens ==4.16.1
     , mysql >=0.1.1.1
@@ -82,6 +83,7 @@ executable HaskellMySQL-exe
     , bytestring-strict-builder
     , concurrent-extra
     , containers >=0.5 && <=0.6
+    , deepseq
     , io-streams
     , lens ==4.16.1
     , mysql >=0.1.1.1
@@ -117,6 +119,7 @@ test-suite HaskellMySQL-test
     , bytestring-strict-builder
     , concurrent-extra
     , containers >=0.5 && <=0.6
+    , deepseq
     , io-streams
     , lens ==4.16.1
     , mysql >=0.1.1.1

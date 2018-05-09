@@ -3,28 +3,15 @@
 {-# LANGUAGE UnicodeSyntax     #-}
 module MySQLWorker (doMySQLWork) where
 
-import           Control.Arrow
-import           Control.Concurrent.Async
-import           Control.Exception
-import           Control.Monad
+import           Control.DeepSeq                    (rnf)
+import           Control.Exception                  (SomeException, catch, evaluate)
+import           Control.Monad                      (forM, forM_, when, unless)
 import           Data.Aeson                         (decodeStrict)
-import qualified Data.ByteString                    as B
-import qualified Data.ByteString.Lazy               as BL
-import           Data.ByteString.Lazy.Char8         (ByteString)
+import           Data.ByteString                    (ByteString)
 import           Data.Int                           (Int64)
-import qualified Data.IntSet                        as IntSet
-import           Data.IORef
-import qualified Data.Map                           as Map
-import           Data.Maybe                         (catMaybes, fromJust,
-                                                     isJust)
+import           Data.Maybe                         (fromJust, isJust)
 import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
-import           Data.String
-import qualified Data.Text.IO                       as T
-import qualified Data.Vector                        as V
-import qualified Data.Vector.Algorithms.Intro       as MVAlgo
-import qualified Data.Vector.Algorithms.Search      as MVSearch
-import qualified Data.Vector.Mutable                as MV
 import           Database.MySQL.Base                (MySQLError (..))
 import           Database.MySQL.Base.Types          (Field (..))
 import           Database.MySQL.Simple              as MySQL
@@ -35,14 +22,10 @@ import           Model.Author                       as Author
 import           Model.AuthorRef                    as AuthorRef
 import           Model.Book                         as Book
 import           Model.Url                          as Url
-import           System.IO
 import qualified System.IO.Streams                  as Streams
 import qualified System.IO.Streams.Combinators      as Streams
-import           System.Random
-import qualified Test.DataModel
-import           Text.Pretty.Simple
-import           Text.Printf
-import           Util.Sanitizer
+import           Text.Pretty.Simple                 (pPrint)
+import           Util.Sanitizer                     (sanitize)
 
 connectInfo =
     defaultConnectInfo
@@ -195,17 +178,20 @@ insertBookAuthor conn verbose bookid authors = do
         else
             putStrLn "books_authors init failure"
 
-type Stream = Streams.InputStream B.ByteString
+type Stream = Streams.InputStream ByteString
 
 doMySQLWork ∷ Stream → Int64 → Int64 → Stream → Int64 → Int64 → Bool → IO()
 doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStart verbose = do
+    let takeAuthors = if numAuthors < 0 then return . id else Streams.take numAuthors
+        takeBooks   = if numBooks < 0 then return . id else Streams.take numBooks
+
     conn <- MySQL.connect connectInfo
 
     when verbose $ putStrLn "Operating on authors..."
 
     authorsStream <-
         Streams.drop authorStart authorsStream_ >>=
-            Streams.take numAuthors >>=
+            takeAuthors >>=
                 Streams.map decodeStrict >>=
                     Streams.filter isJust >>=
                         Streams.map fromJust
@@ -220,13 +206,15 @@ doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStar
 
     booksStream <-
         Streams.drop bookStart booksStream_ >>=
-            Streams.take numBooks >>=
+            takeBooks >>=
                 Streams.map (decodeStrict . sanitize) >>=
                     Streams.filter isJust >>=
                         Streams.map fromJust
 
-    Streams.mapM_
-        (insertBook conn verbose)
-        booksStream
+    Streams.take 5 booksStream >>= Streams.mapM_ (pPrint :: Book -> IO())
+
+    -- Streams.mapM_
+    --     (insertBook conn verbose)
+    --     booksStream
 
     MySQL.close conn
