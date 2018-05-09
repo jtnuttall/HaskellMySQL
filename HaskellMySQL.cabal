@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ec83a5f66b3f67e4d849eb99187c0fca93e243e6d6590adc0dc16f7870e60a18
+-- hash: 2f814a18b0563b2e0120c73eee1bdd775378a11328dc1998786d1de778cfe2b8
 
 name:           HaskellMySQL
 version:        0.1.0.0
@@ -43,6 +43,8 @@ library
     , mysql-simple ==0.4.5
     , neat-interpolation ==0.3.2.1
     , optparse-applicative ==0.14.2.0
+    , pipes
+    , pipes-concurrency
     , pretty-simple >=2.1 && <2.2
     , random
     , regex-base
@@ -90,6 +92,8 @@ executable HaskellMySQL-exe
     , mysql-simple ==0.4.5
     , neat-interpolation ==0.3.2.1
     , optparse-applicative ==0.14.2.0
+    , pipes
+    , pipes-concurrency
     , pretty-simple >=2.1 && <2.2
     , random
     , regex-base
@@ -126,6 +130,8 @@ test-suite HaskellMySQL-test
     , mysql-simple ==0.4.5
     , neat-interpolation ==0.3.2.1
     , optparse-applicative ==0.14.2.0
+    , pipes
+    , pipes-concurrency
     , pretty-simple >=2.1 && <2.2
     , random
     , regex-base

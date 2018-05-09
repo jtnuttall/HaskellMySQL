@@ -1,12 +1,17 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
-import           Data.Int            (Int64)
-import           Data.Semigroup      ((<>))
-import           MySQLWorker         (doMySQLWork)
+import           Control.Monad            (forever)
+import           Control.Concurrent.Async (concurrently_)
+import           Data.Int                 (Int64)
+import           Data.Semigroup           ((<>))
+import           GHC.Conc                 (forkIO)
+import           MySQLWorker              (doMySQLWork)
 import           Options.Applicative
-import           System.IO           (IOMode (ReadMode), withBinaryFile)
-import qualified System.IO.Streams   as Streams
+import           Pipes                    as Pipes
+import           Pipes.Concurrent         as Pipes
+import           System.IO                (IOMode (ReadMode), withBinaryFile)
+import qualified System.IO.Streams        as Streams
 
 data Args = Args
     { authorsJSON :: FilePath
@@ -66,20 +71,29 @@ opts = info (argsParser <**> helper)
     <> progDesc "Jeremy's MySQL worker for ITP 303"
     )
 
+
+stdoutConsumer :: Consumer String IO ()
+stdoutConsumer = forever $ await >>= lift . putStrLn
+
 main :: IO ()
 main = do
     args <- execParser opts
+
+    (consoleOutbox, consoleInbox) <- Pipes.spawn Pipes.unbounded
 
     withBinaryFile (authorsJSON args) ReadMode $ \authorsHandle ->
         withBinaryFile (booksJSON args) ReadMode $ \booksHandle -> do
             authorsStream <- Streams.handleToInputStream authorsHandle >>= Streams.lines
             booksStream   <- Streams.handleToInputStream booksHandle >>= Streams.lines
 
-            doMySQLWork
-                authorsStream
-                (numAuthors args)
-                (startAuthor args)
-                booksStream
-                (numBooks args)
-                (startBook args)
-                (verbose args)
+            forkIO $ doMySQLWork
+                        authorsStream
+                        (numAuthors args)
+                        (startAuthor args)
+                        booksStream
+                        (numBooks args)
+                        (startBook args)
+                        (verbose args)
+                        consoleOutbox
+
+            runEffect $ fromInput consoleInbox >-> stdoutConsumer
