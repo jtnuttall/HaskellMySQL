@@ -1,29 +1,31 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE NamedFieldPuns  #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE UnicodeSyntax   #-}
 module Model.Book where
 
-import Model.Object (Object(Object))
-import qualified Model.Object as Object
-import Model.Url (Url)
-import Model.AuthorRef (AuthorRef)
-import Util.Time (parseDate)
-import Util.String (toSnake)
-import Data.Aeson.TH (deriveJSON, defaultOptions, fieldLabelModifier)
-import Data.Time.Calendar (Day)
-import Data.Text (Text)
-import Database.MySQL.Simple.Types
+import           Data.Aeson.TH               (defaultOptions, deriveJSON,
+                                              fieldLabelModifier)
+import           Data.Text                   (Text)
+import           Data.Time.Calendar          (Day)
+import           Database.MySQL.Simple.Types
+import           Model.AuthorRef             (AuthorRef)
+import           Model.Object                (Object (Object))
+import qualified Model.Object                as Object
+import           Model.Url                   (Url)
+import           Util.String                 (toSnake)
+import           Util.Time                   (parseDate)
 
 data Book = Book
-    { bookid :: Maybe Int
-    , title :: String
-    , subtitle :: Maybe String
-    , created :: Maybe (Object String)
+    { bookid       :: Maybe Int
+    , title        :: String
+    , subtitle     :: Maybe String
+    , created      :: Maybe (Object String)
     , lastModified :: Maybe (Object String)
-    , description :: Maybe (Object Text)
-    , key :: String 
-    , authors :: [AuthorRef]
-    , subjects :: Maybe [String]
-    , links :: Maybe [Url]
+    , description  :: Maybe (Object Text)
+    , key          :: String
+    , authors      :: [AuthorRef]
+    , subjects     :: Maybe [String]
+    , links        :: Maybe [Url]
     } deriving (Show)
 
 instance Eq Book where
@@ -37,22 +39,22 @@ type BookQueryData =
     , Maybe String
     , Maybe Day
     , Maybe Text
-    , String 
+    , String
     )
 
-bookTuple :: Book -> BookQueryData
-bookTuple Book 
+bookTuple ∷ Book → BookQueryData
+bookTuple Book
     { title
     , subtitle
     , created
     , description
-    , key 
-    } 
+    , key
+    }
     = ( title
       , subtitle
       , created >>= Object.value >>= parseDate
       , description >>= Object.value
-      , key 
+      , key
       )
 
 $( deriveJSON (defaultOptions { fieldLabelModifier = toSnake }) ''Book )

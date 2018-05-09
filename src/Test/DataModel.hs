@@ -1,18 +1,19 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module Test.DataModel (run) where
 
-import Model.Book
-import Model.Author
-import Control.Monad (forM_)
-import Data.Aeson (decode, eitherDecode)
-import Data.Either (rights, isRight, isLeft)
-import Text.Printf (printf)
-import Text.Pretty.Simple
+import           Control.Monad              (forM_)
+import           Data.Aeson                 (decode, eitherDecode)
 import qualified Data.ByteString.Lazy.Char8 as C
+import           Data.Either                (isLeft, isRight, rights)
+import           Model.Author
+import           Model.Book
+import           Text.Pretty.Simple
+import           Text.Printf                (printf)
 
-run :: [C.ByteString] -> IO()
+run ∷ [C.ByteString] → IO()
 run jsonObjs = do
     let decoded = map eitherDecode jsonObjs :: [Either String Book]
-    
+
     putStrLn "Here's two of the decoded objects:"
     forM_ (take 2 decoded) $ \obj -> do
         pPrint obj

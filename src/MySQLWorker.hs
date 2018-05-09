@@ -1,48 +1,50 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE UnicodeSyntax     #-}
 module MySQLWorker (doMySQLWork) where
 
-import Model.Author as Author
-import Model.Book as Book
-import Model.Url as Url
-import Model.AuthorRef as AuthorRef
-import Control.Monad
-import Control.Exception
-import Control.Arrow
-import Data.Maybe (fromJust, isJust, catMaybes)
-import Data.Aeson (decodeStrict)
-import Data.IORef
-import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.String
-import Database.MySQL.Base (MySQLError(..))
-import Database.MySQL.Simple as MySQL
-import Database.MySQL.Simple.Param as MySQL
-import Database.MySQL.Simple.Result as MySQL
-import Database.MySQL.Simple.QueryResults as MySQL
-import Database.MySQL.Base.Types (Field(..))
-import qualified Data.ByteString.Lazy as BL
-import System.IO
-import qualified Data.ByteString as B
-import Data.Set (Set)
-import qualified Data.Set as Set
-import qualified Data.IntSet as IntSet
-import qualified Data.Map as Map
-import Text.Pretty.Simple
+import           Control.Arrow
+import           Control.Concurrent.Async
+import           Control.Exception
+import           Control.Monad
+import           Data.Aeson                         (decodeStrict)
+import qualified Data.ByteString                    as B
+import qualified Data.ByteString.Lazy               as BL
+import           Data.ByteString.Lazy.Char8         (ByteString)
+import           Data.Int                           (Int64)
+import qualified Data.IntSet                        as IntSet
+import           Data.IORef
+import qualified Data.Map                           as Map
+import           Data.Maybe                         (catMaybes, fromJust,
+                                                     isJust)
+import           Data.Set                           (Set)
+import qualified Data.Set                           as Set
+import           Data.String
+import qualified Data.Text.IO                       as T
+import qualified Data.Vector                        as V
+import qualified Data.Vector.Algorithms.Intro       as MVAlgo
+import qualified Data.Vector.Algorithms.Search      as MVSearch
+import qualified Data.Vector.Mutable                as MV
+import           Database.MySQL.Base                (MySQLError (..))
+import           Database.MySQL.Base.Types          (Field (..))
+import           Database.MySQL.Simple              as MySQL
+import           Database.MySQL.Simple.Param        as MySQL
+import           Database.MySQL.Simple.QueryResults as MySQL
+import           Database.MySQL.Simple.Result       as MySQL
+import           Model.Author                       as Author
+import           Model.AuthorRef                    as AuthorRef
+import           Model.Book                         as Book
+import           Model.Url                          as Url
+import           System.IO
+import qualified System.IO.Streams                  as Streams
+import qualified System.IO.Streams.Combinators      as Streams
+import           System.Random
 import qualified Test.DataModel
-import Util.Sanitizer
-import Control.Concurrent.Async
-import System.Random
-import qualified Data.Vector as V
-import qualified Data.Vector.Mutable as MV
-import qualified Data.Vector.Algorithms.Intro as MVAlgo
-import qualified Data.Vector.Algorithms.Search as MVSearch
-import qualified Data.Text.IO as T
-import Text.Printf
-import qualified System.IO.Streams as Streams
-import qualified System.IO.Streams.Combinators as Streams
-import Data.Int (Int64)
+import           Text.Pretty.Simple
+import           Text.Printf
+import           Util.Sanitizer
 
-connectInfo = 
+connectInfo =
     defaultConnectInfo
         { connectHost = "303.itpwebdev.com"
         , connectUser = "jtnuttal"
@@ -51,7 +53,7 @@ connectInfo =
         }
 
 
-insertAuthor :: Connection -> Bool -> Author -> Set String -> IO (Set String)
+insertAuthor ∷ Connection → Bool → Author → Set String → IO (Set String)
 insertAuthor conn verbose author@Author { Author.name, Author.links } visitedNames = do
     let visited = Set.member name visitedNames
 
@@ -59,7 +61,7 @@ insertAuthor conn verbose author@Author { Author.name, Author.links } visitedNam
     else do
         putStrLn $ "Working on author " ++ name
 
-        {- INSERT INTO authors 
+        {- INSERT INTO authors
             ( authorid
             , bio
             , name
@@ -72,12 +74,12 @@ insertAuthor conn verbose author@Author { Author.name, Author.links } visitedNam
             , birthDate
             , revision
             , permissions
-            ) VALUES 
+            ) VALUES
             ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
         -}
-        affected <- 
-            catch 
-                (MySQL.execute conn 
+        affected <-
+            catch
+                (MySQL.execute conn
                     "INSERT INTO `authors` (`bio`, `name`, `personalName`, `deathDate`, `created`, `lastModified`, `latestRevision`, `key`, `birthDate`, `revision`, `permissions`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     (authorTuple author)
                 )
@@ -104,7 +106,7 @@ insertAuthor conn verbose author@Author { Author.name, Author.links } visitedNam
                         if affected > 0 then do
                             urlid <- MySQL.insertID conn
 
-                            affected <- 
+                            affected <-
                                 catch
                                     (MySQL.execute conn
                                         "INSERT IGNORE INTO links (authorid, urlid) VALUES (?, ?)"
@@ -113,11 +115,11 @@ insertAuthor conn verbose author@Author { Author.name, Author.links } visitedNam
                                     (\e -> (\_ -> return 0) (e :: SomeException))
 
 
-                            when verbose $ 
+                            when verbose $
                                 unless (affected > 0) $
                                     putStrLn "Insertion of link failed."
 
-                        else 
+                        else
                             when verbose $
                                 putStrLn "The insert statement for a URL is broken."
 
@@ -130,12 +132,12 @@ insertAuthor conn verbose author@Author { Author.name, Author.links } visitedNam
     return visitedNames
 
 
-insertBook :: Connection -> Bool -> Book -> IO ()
+insertBook ∷ Connection → Bool → Book → IO ()
 insertBook conn verbose book@Book { Book.title, Book.authors, Book.subjects } = do
     putStrLn $ "Working on book " ++ title
 
-    affected <- catch 
-        (MySQL.execute conn 
+    affected <- catch
+        (MySQL.execute conn
             "INSERT INTO `books` (`title`, `subtitle`, `created`, `description`, `key`) VALUES (?, ?, ?, ?, ?)"
             (bookTuple book)
         )
@@ -167,27 +169,27 @@ insertBook conn verbose book@Book { Book.title, Book.authors, Book.subjects } = 
             when verbose $
                 if affected > 0 then
                     putStrLn "Successfully added subjects."
-                else 
+                else
                     putStrLn "Insertion of subject failed."
 
-        
+
         insertBookAuthor conn verbose bookid authors
 
-insertBookAuthor :: Param a => Connection -> Bool -> a -> [AuthorRef] -> IO()
+insertBookAuthor ∷ Param a ⇒ Connection → Bool → a → [AuthorRef] → IO()
 insertBookAuthor conn verbose bookid authors = do
     affected <- fmap sum . forM authors $ \authorRef -> do
         candidateIds <- MySQL.query conn
             "SELECT (`authorid`) FROM `authors` WHERE `key` LIKE ?"
             (Only (AuthorRef.key <$> AuthorRef.author authorRef))
 
-        let toInt = (\(Only v) -> v) :: Only Int -> Int
+        let toInt = (\(Only v) -> v) :: Only Int → Int
 
-        fmap sum . forM (map toInt candidateIds) $ \authorid -> 
+        fmap sum . forM (map toInt candidateIds) $ \authorid ->
             MySQL.execute conn
                 "INSERT IGNORE books_authors (`authorid`, `bookid`) VALUES (?, ?)"
                 (authorid, bookid)
 
-    when verbose $ 
+    when verbose $
         if affected > 0 then
             putStrLn "books_authors init success"
         else
@@ -195,21 +197,21 @@ insertBookAuthor conn verbose bookid authors = do
 
 type Stream = Streams.InputStream B.ByteString
 
-doMySQLWork :: Stream -> Int64 -> Int64 -> Stream -> Int64 -> Int64 -> Bool -> IO()
+doMySQLWork ∷ Stream → Int64 → Int64 → Stream → Int64 → Int64 → Bool → IO()
 doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStart verbose = do
     conn <- MySQL.connect connectInfo
 
     when verbose $ putStrLn "Operating on authors..."
 
-    authorsStream <- 
+    authorsStream <-
         Streams.drop authorStart authorsStream_ >>=
             Streams.take numAuthors >>=
                 Streams.map decodeStrict >>=
                     Streams.filter isJust >>=
                         Streams.map fromJust
 
-    Streams.foldM_ 
-        (flip $ insertAuthor conn verbose) 
+    Streams.foldM_
+        (flip $ insertAuthor conn verbose)
         (return Set.empty)
         return
         authorsStream
@@ -223,8 +225,8 @@ doMySQLWork authorsStream_ numAuthors authorStart booksStream_ numBooks bookStar
                     Streams.filter isJust >>=
                         Streams.map fromJust
 
-    Streams.mapM_ 
-        (insertBook conn verbose) 
+    Streams.mapM_
+        (insertBook conn verbose)
         booksStream
 
     MySQL.close conn

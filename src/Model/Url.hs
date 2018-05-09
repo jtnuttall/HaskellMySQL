@@ -1,12 +1,13 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE NamedFieldPuns  #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE UnicodeSyntax   #-}
 module Model.Url where
 
-import Util.String (toSnake)
-import Data.Aeson.TH
+import           Data.Aeson.TH
+import           Util.String   (toSnake)
 
 data Url = Url
-    { url :: String
+    { url   :: String
     , title :: String
     } deriving (Show)
 
@@ -19,5 +20,5 @@ type UrlQueryData =
 $( deriveJSON (defaultOptions { fieldLabelModifier = toSnake }) ''Url )
 
 
-urlTuple :: Url -> UrlQueryData
+urlTuple ∷ Url → UrlQueryData
 urlTuple Url { url, title } = (url, title)

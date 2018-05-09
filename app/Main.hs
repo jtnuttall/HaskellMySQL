@@ -1,28 +1,28 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
-import MySQLWorker (doMySQLWork)
-import Data.Semigroup ((<>))
-import Options.Applicative
-import System.IO (IOMode(ReadMode), withBinaryFile)
-import qualified System.IO.Streams as Streams (handleToInputStream, lines) 
-import Data.Int (Int64)
+import           Data.Int            (Int64)
+import           Data.Semigroup      ((<>))
+import           MySQLWorker         (doMySQLWork)
+import           Options.Applicative
+import           System.IO           (IOMode (ReadMode), withBinaryFile)
+import qualified System.IO.Streams   as Streams
 
 data Args = Args
     { authorsJSON :: FilePath
-    , numAuthors :: Int64
+    , numAuthors  :: Int64
     , startAuthor :: Int64
-    , booksJSON :: FilePath
-    , numBooks :: Int64
-    , startBook :: Int64
-    , verbose :: Bool
+    , booksJSON   :: FilePath
+    , numBooks    :: Int64
+    , startBook   :: Int64
+    , verbose     :: Bool
     } deriving (Show)
 
 argsParser :: Parser Args
 argsParser = Args
     <$> strArgument
         ( metavar "AUTHORS"
-       <> help "The authors json file to work with." 
+       <> help "The authors json file to work with."
         )
     <*> option auto
         ( metavar "NUMAUTHORS"
@@ -32,7 +32,7 @@ argsParser = Args
        <> value (negate 1)
         )
     <*> option auto
-        ( metavar "STARTAUTHOR" 
+        ( metavar "STARTAUTHOR"
        <> long "start-author"
        <> help "The index of the author to start with. Defaults to 0."
        <> value 0
@@ -62,22 +62,22 @@ argsParser = Args
 
 opts :: ParserInfo Args
 opts = info (argsParser <**> helper)
-    (  fullDesc 
+    (  fullDesc
     <> progDesc "Jeremy's MySQL worker for ITP 303"
     )
 
 main :: IO ()
-main = do 
-    args <- execParser opts 
+main = do
+    args <- execParser opts
 
     withBinaryFile (authorsJSON args) ReadMode $ \authorsHandle ->
         withBinaryFile (booksJSON args) ReadMode $ \booksHandle -> do
             authorsStream <- Streams.handleToInputStream authorsHandle >>= Streams.lines
             booksStream   <- Streams.handleToInputStream booksHandle >>= Streams.lines
 
-            doMySQLWork 
-                authorsStream 
-                (numAuthors args) 
+            doMySQLWork
+                authorsStream
+                (numAuthors args)
                 (startAuthor args)
                 booksStream
                 (numBooks args)
