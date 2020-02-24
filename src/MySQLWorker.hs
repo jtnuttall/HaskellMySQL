@@ -33,10 +33,10 @@ type Out = Pipes.Output String
 
 connectInfo =
     defaultConnectInfo
-        { connectHost = "303.itpwebdev.com"
-        , connectUser = "jtnuttal"
-        , connectPassword = "Rain07bow"
-        , connectDatabase = "jtnuttal_books_db"
+        { connectHost = ""
+        , connectUser = ""
+        , connectPassword = ""
+        , connectDatabase = ""
         }
 
 
